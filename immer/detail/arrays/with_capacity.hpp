@@ -42,7 +42,8 @@ struct with_capacity
         : ptr{p}
         , size{s}
         , capacity{c}
-    {}
+    {
+    }
 
     with_capacity(const with_capacity& other)
         : with_capacity{other.ptr, other.size, other.capacity}
@@ -128,7 +129,7 @@ struct with_capacity
                                bool> = true>
     static with_capacity from_range(Iter first, Sent last)
     {
-        auto count = static_cast<size_t>(distance(first, last));
+        auto count = static_cast<size_t>(detail::distance(first, last));
         if (count == 0)
             return empty();
         else
@@ -178,17 +179,18 @@ struct with_capacity
     static size_t recommend_up(size_t sz, size_t cap)
     {
         auto max = std::numeric_limits<size_t>::max();
-        return sz <= cap ? cap
-                         : cap >= max / 2 ? max
-                                          /* otherwise */
-                                          : std::max(2 * cap, sz);
+        return sz <= cap        ? cap
+               : cap >= max / 2 ? max
+                                /* otherwise */
+                                : std::max(2 * cap, sz);
     }
 
     static size_t recommend_down(size_t sz, size_t cap)
     {
-        return sz == 0 ? 1
-                       : sz < cap / 2 ? sz * 2 :
-                                      /* otherwise */ cap;
+        return sz == 0        ? 1
+               : sz < cap / 2 ? sz * 2
+                              :
+                              /* otherwise */ cap;
     }
 
     with_capacity push_back(T value) const
@@ -291,6 +293,7 @@ struct with_capacity
 
     with_capacity take(std::size_t sz) const
     {
+        assert(sz <= size);
         auto cap = recommend_down(sz, capacity);
         auto p   = node_t::copy_n(cap, ptr, sz);
         return {p, sz, cap};
@@ -298,8 +301,9 @@ struct with_capacity
 
     void take_mut(edit_t e, std::size_t sz)
     {
+        assert(sz <= size);
         if (ptr->can_mutate(e)) {
-            destroy_n(data() + size, size - sz);
+            detail::destroy_n(data() + size, size - sz);
             size = sz;
         } else {
             auto cap = recommend_down(sz, capacity);

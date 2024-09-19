@@ -75,7 +75,8 @@ public:
      */
     array(std::initializer_list<T> values)
         : impl_{impl_t::from_initializer_list(values)}
-    {}
+    {
+    }
 
     /*!
      * Constructs a array containing the elements in the range
@@ -88,7 +89,8 @@ public:
                                bool> = true>
     array(Iter first, Sent last)
         : impl_{impl_t::from_range(first, last)}
-    {}
+    {
+    }
 
     /*!
      * Constructs an array containing the element `val` repeated `n`
@@ -96,7 +98,8 @@ public:
      */
     array(size_type n, T v = {})
         : impl_{impl_t::from_fill(n, v)}
-    {}
+    {
+    }
 
     /*!
      * Returns an iterator pointing at the first element of the
@@ -107,7 +110,8 @@ public:
 
     /*!
      * Returns an iterator pointing just after the last element of the
-     * collection. It does not allocate memory and its complexity is @f$ O(1) @f$.
+     * collection. It does not allocate memory and its complexity is @f$ O(1)
+     * @f$.
      */
     IMMER_NODISCARD iterator end() const { return impl_.data() + impl_.size; }
 
@@ -308,6 +312,14 @@ public:
         return transient_type{std::move(impl_)};
     }
 
+    /*!
+     * Returns a value that can be used as identity for the container.  If two
+     * values have the same identity, they are guaranteed to be equal and to
+     * contain the same objects.  However, two equal containers are not
+     * guaranteed to have the same identity.
+     */
+    void* identity() const { return impl_.ptr; }
+
     // Semi-private
     const impl_t& impl() const { return impl_; }
 
@@ -316,7 +328,8 @@ private:
 
     array(impl_t impl)
         : impl_(std::move(impl))
-    {}
+    {
+    }
 
     array&& push_back_move(std::true_type, value_type value)
     {

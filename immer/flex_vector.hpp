@@ -100,7 +100,8 @@ public:
      */
     flex_vector(std::initializer_list<T> values)
         : impl_{impl_t::from_initializer_list(values)}
-    {}
+    {
+    }
 
     /*!
      * Constructs a flex_vector containing the elements in the range
@@ -112,7 +113,8 @@ public:
                                bool> = true>
     flex_vector(Iter first, Sent last)
         : impl_{impl_t::from_range(first, last)}
-    {}
+    {
+    }
 
     /*!
      * Constructs a vector containing the element `val` repeated `n`
@@ -120,7 +122,8 @@ public:
      */
     flex_vector(size_type n, T v = {})
         : impl_{impl_t::from_fill(n, v)}
-    {}
+    {
+    }
 
     /*!
      * Default constructor.  It creates a flex_vector with the same
@@ -132,7 +135,8 @@ public:
                 v.impl_.shift,
                 v.impl_.root->inc(),
                 v.impl_.tail->inc()}
-    {}
+    {
+    }
 
     /*!
      * Returns an iterator pointing at the first element of the
@@ -503,6 +507,17 @@ public:
     IMMER_NODISCARD transient_type transient() const& { return impl_; }
     IMMER_NODISCARD transient_type transient() && { return std::move(impl_); }
 
+    /*!
+     * Returns a value that can be used as identity for the container.  If two
+     * values have the same identity, they are guaranteed to be equal and to
+     * contain the same objects.  However, two equal containers are not
+     * guaranteed to have the same identity.
+     */
+    std::pair<void*, void*> identity() const
+    {
+        return {impl_.root, impl_.tail};
+    }
+
     // Semi-private
     const impl_t& impl() const { return impl_; }
 
@@ -516,6 +531,7 @@ public:
 private:
     friend transient_type;
 
+public:
     flex_vector(impl_t impl)
         : impl_(std::move(impl))
     {
@@ -526,6 +542,7 @@ private:
 #endif
     }
 
+private:
     flex_vector&& push_back_move(std::true_type, value_type value)
     {
         impl_.push_back_mut({}, std::move(value));
@@ -604,5 +621,10 @@ private:
 
     impl_t impl_ = {};
 };
+
+static_assert(std::is_nothrow_move_constructible<flex_vector<int>>::value,
+              "flex_vector is not nothrow move constructible");
+static_assert(std::is_nothrow_move_assignable<flex_vector<int>>::value,
+              "flex_vector is not nothrow move assignable");
 
 } // namespace immer

@@ -8,6 +8,10 @@
 
 #pragma once
 
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define IMMER_HAS_CPP17 1
+#endif
+
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)
 #define IMMER_NODISCARD [[nodiscard]]
@@ -18,9 +22,15 @@
 #endif
 #endif
 
-#ifdef __has_feature
-#if !__has_feature(cxx_exceptions)
+#if !defined(IMMER_USE_EXCEPTIONS) && !defined(IMMER_NO_EXCEPTIONS)
+#if defined(_MSC_VER)
+#if !_HAS_EXCEPTIONS
 #define IMMER_NO_EXCEPTIONS
+#endif
+#else
+#if !__cpp_exceptions
+#define IMMER_NO_EXCEPTIONS
+#endif
 #endif
 #endif
 
@@ -29,7 +39,7 @@
 #define IMMER_CATCH(expr) else
 #define IMMER_THROW(expr)                                                      \
     do {                                                                       \
-        assert(!#expr);                                                        \
+        assert((#expr, false));                                                \
         std::terminate();                                                      \
     } while (false)
 #define IMMER_RETHROW
@@ -66,6 +76,10 @@
 #define IMMER_DEBUG_PRINT 0
 #endif
 
+#ifndef IMMER_DEBUG_STATS
+#define IMMER_DEBUG_STATS 0
+#endif
+
 #ifndef IMMER_DEBUG_DEEP_CHECK
 #define IMMER_DEBUG_DEEP_CHECK 0
 #endif
@@ -73,6 +87,10 @@
 #if IMMER_DEBUG_TRACES || IMMER_DEBUG_PRINT
 #include <iostream>
 #include <prettyprint.hpp>
+#endif
+
+#if IMMER_DEBUG_STATS
+#include <iostream>
 #endif
 
 #if IMMER_DEBUG_TRACES
@@ -107,6 +125,10 @@
 #else
 #define IMMER_ENABLE_DEBUG_SIZE_HEAP 1
 #endif
+#endif
+
+#ifndef IMMER_THROW_ON_INVALID_STATE
+#define IMMER_THROW_ON_INVALID_STATE 0
 #endif
 
 namespace immer {

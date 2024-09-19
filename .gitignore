@@ -24,3 +24,8 @@ tools/clojure/.lein*
 *.pyc
 
 /result*
+
+.build
+.swiftpm
+.vscode
+.pre-commit-config.yaml

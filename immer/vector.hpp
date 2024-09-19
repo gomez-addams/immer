@@ -114,7 +114,8 @@ public:
      */
     vector(std::initializer_list<T> values)
         : impl_{impl_t::from_initializer_list(values)}
-    {}
+    {
+    }
 
     /*!
      * Constructs a vector containing the elements in the range
@@ -126,7 +127,8 @@ public:
                                bool> = true>
     vector(Iter first, Sent last)
         : impl_{impl_t::from_range(first, last)}
-    {}
+    {
+    }
 
     /*!
      * Constructs a vector containing the element `val` repeated `n`
@@ -134,7 +136,8 @@ public:
      */
     vector(size_type n, T v = {})
         : impl_{impl_t::from_fill(n, v)}
-    {}
+    {
+    }
 
     /*!
      * Returns an iterator pointing at the first element of the
@@ -340,6 +343,17 @@ public:
     IMMER_NODISCARD transient_type transient() const& { return impl_; }
     IMMER_NODISCARD transient_type transient() && { return std::move(impl_); }
 
+    /*!
+     * Returns a value that can be used as identity for the container.  If two
+     * values have the same identity, they are guaranteed to be equal and to
+     * contain the same objects.  However, two equal containers are not
+     * guaranteed to have the same identity.
+     */
+    std::pair<void*, void*> identity() const
+    {
+        return {impl_.root, impl_.tail};
+    }
+
     // Semi-private
     const impl_t& impl() const { return impl_; }
 
@@ -354,6 +368,8 @@ private:
     friend flex_t;
     friend transient_type;
 
+    // for immer::persist
+public:
     vector(impl_t impl)
         : impl_(std::move(impl))
     {
@@ -364,6 +380,7 @@ private:
 #endif
     }
 
+private:
     vector&& push_back_move(std::true_type, value_type value)
     {
         impl_.push_back_mut({}, std::move(value));
